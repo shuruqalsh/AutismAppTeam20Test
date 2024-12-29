@@ -396,7 +396,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AutismAppTeam20Test/Preview Content\"";
-				DEVELOPMENT_TEAM = V3BH27CH3W;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "نحتاج إلى إذن لاستخدام الميكروفون لتسجيل الصوت";
@@ -427,7 +427,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AutismAppTeam20Test/Preview Content\"";
-				DEVELOPMENT_TEAM = V3BH27CH3W;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "نحتاج إلى إذن لاستخدام الميكروفون لتسجيل الصوت";
