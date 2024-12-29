@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -10,11 +9,12 @@ struct FilesScreen: View {
     @State private var fileToEdit: File?
     @State private var showingDeleteConfirmation = false
     @State private var fileToDelete: File?
-    @State private var selectedFile: File? = nil  // لتخزين الملف المحدد أثناء الضغط المطول
     @State private var showPasswordPrompt = false  // عرض نافذة إدخال الرقم السري
     @State private var password = ""  // الرقم السري المدخل
     @State private var passwordError = false  // حالة لتحديد إذا كان الرقم السري خاطئًا
     @State private var showPassword = false  // التحكم في إظهار/إخفاء كلمة المرور
+    @State private var isPasswordCorrect = false  // حالة لتحديد ما إذا كان الرقم السري صحيحًا
+    @State private var isEditingMode = false  // لتحديد إذا كان المستخدم في وضع التعديل (يظهر الأزرار)
 
     let correctPassword = "1234"  // الرقم السري الصحيح (يمكن تغييره إلى أي شيء آخر)
 
@@ -31,9 +31,23 @@ struct FilesScreen: View {
                 Color(hex: "#FFF6E8") // هنا تضع كود الهيكس الذي تريده
                     .ignoresSafeArea()  // لتغطية كامل الشاشة
 
-                
                 VStack {
-                    
+                    // زر القفل في الأعلى الذي يظهر نافذة إدخال الرقم السري
+                    Button(action: {
+                        if isEditingMode {  // إذا كان في وضع التعديل، عند الضغط على زر القفل ننهي وضع التعديل
+                            isEditingMode = false
+                        } else {
+                            showPasswordPrompt = true  // إظهار نافذة إدخال الرقم السري عند الضغط على زر القفل
+                        }
+                    }) {
+                        Image(systemName: isEditingMode ? "checkmark.circle.fill" : "lock.shield") // يظهر قفل أو علامة صح بناءً على الحالة
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .padding()
+                            .foregroundColor(isEditingMode ? .green : .blue)
+                    }
+
                     // Content Section
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 16) {
@@ -45,28 +59,8 @@ struct FilesScreen: View {
                                             .padding()
                                     }
 
-                                    Button(action: {
-                                        withAnimation {
-                                            // عند الضغط على الزر، نعرض نافذة الرقم السري
-                                            if selectedFile == file {
-                                                selectedFile = nil  // إخفاء الأزرار إذا كانت ظاهرة
-                                            } else {
-                                                showPasswordPrompt = true  // إظهار نافذة إدخال الرقم السري
-                                                password = ""  // إعادة تعيين الرقم السري إلى فارغ
-                                                fileToEdit = file  // تعيين الملف الذي سيتم التعامل معه
-                                            }
-                                        }
-                                    }) {
-                                        Image("􀌆") // استبدال "yourImageName" باسم الصورة الموجودة في أصول مشروعك
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 50, height: 50)
-
-                                    }
-
-                                    
-                                    // عرض الأزرار أسفل الملف فقط إذا كان الرقم السري صحيحًا
-                                    if selectedFile == file {
+                                    // عرض الأزرار أسفل كل الملفات إذا كان في وضع التعديل
+                                    if isEditingMode {
                                         HStack(spacing: 20) {
                                             // زر تعديل
                                             Button(action: {
@@ -81,7 +75,7 @@ struct FilesScreen: View {
                                                     .clipShape(Circle())
                                             }
                                             .frame(width: 44, height: 44)
-                                            
+
                                             // زر حذف
                                             Button(action: {
                                                 fileToDelete = file
@@ -107,6 +101,7 @@ struct FilesScreen: View {
                 .onAppear {
                     loadFiles()  // إعادة تحميل الملفات عند ظهور الشاشة
                 }
+
                 // نافذة تعديل الملف
                 .sheet(isPresented: $showingEditFileSheet) {
                     if let fileToEdit = fileToEdit {
@@ -117,6 +112,7 @@ struct FilesScreen: View {
                         }
                     }
                 }
+
                 // التنبيه الذي يطلب تأكيد الحذف
                 .alert(isPresented: $showingDeleteConfirmation) {
                     Alert(
@@ -130,6 +126,7 @@ struct FilesScreen: View {
                         secondaryButton: .cancel(Text("إلغاء"))
                     )
                 }
+
                 // نافذة إدخال الرقم السري
                 .sheet(isPresented: $showPasswordPrompt) {
                     VStack(spacing: 20) {
@@ -163,8 +160,9 @@ struct FilesScreen: View {
                         Button(action: {
                             // تحقق من الرقم السري
                             if password == correctPassword {
-                                selectedFile = fileToEdit  // إذا كان الرقم السري صحيحًا، نعرض الأزرار
+                                isPasswordCorrect = true  // إذا كان الرقم السري صحيحًا
                                 showPasswordPrompt = false  // إغلاق نافذة الرقم السري
+                                isEditingMode = true  // تفعيل وضع التعديل (إظهار الأزرار)
                             } else {
                                 passwordError = true  // الرقم السري خاطئ
                             }
@@ -189,6 +187,7 @@ struct FilesScreen: View {
                     }
                     .padding()
                 }
+
                 // تخصيص شريط التنقل
                 .toolbar {
                     // زر ملف جديد على اليسار مع المسافة الآمنة
@@ -199,11 +198,9 @@ struct FilesScreen: View {
                             Image("addCardImageHome")  // استخدم الصورة من الـ Assets
                                 .padding(.top, 20)
                                 .padding()
-              
                         }
                     }
 
-                    
                     // العنوان "ملفات" في المنتصف مع تكبير الخط وإضافة مسافة فوقه
                     ToolbarItem(placement: .principal) {
                         Text("ملفات")
@@ -221,6 +218,7 @@ struct FilesScreen: View {
             }
         }
     }
+
     private func loadFiles() {
         do {
             let fetchDescriptor = FetchDescriptor<File>()
@@ -242,4 +240,3 @@ struct FilesScreen: View {
         }
     }
 }
-
