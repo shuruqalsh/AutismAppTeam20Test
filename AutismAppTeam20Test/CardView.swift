@@ -116,20 +116,20 @@ struct CardView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 150)  // تحديد ارتفاع ثابت للصورة
-                    .padding(.bottom, 10)
+                    .frame(height: 300)  // تحديد ارتفاع ثابت للصورة
+//                   .padding(.bottom, 10)
             }
 
             // عرض الإيموجي فقط إذا كان موجودًا
-            if let emoji = card.emoji, !emoji.isEmpty {
+          else if let emoji = card.emoji, !emoji.isEmpty {
                 Text(emoji)
-                    .font(.system(size: 50))
+                    .font(.system(size: 200))
                     .padding(.bottom, 10)  // إضافة حشو بين الإيموجي والشرح
             }
 
             // عرض الوصف أسفل الإيموجي
             Text(card.cardDescription)
-                .font(.system(size: 40))
+                .font(.system(size: 30))
                 .padding(.top, 5)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
@@ -140,6 +140,7 @@ struct CardView: View {
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.1)))
         .padding(.bottom, 10)
         .frame(height: 300)
+        Spacer()
         .onTapGesture {
             // عند النقر على البطاقة، إذا كانت تحتوي على صوت، نقوم بتشغيله
             if let audioData = card.audioData {

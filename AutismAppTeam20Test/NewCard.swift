@@ -681,17 +681,14 @@ import SwiftData
 import PhotosUI
 import AVFoundation
 import MobileCoreServices
+import UIKit
 
 struct NewCard: View {
     @Environment(\.modelContext) private var modelContext
     @Binding var file: File
     @State private var emoji: String? = nil
     @State private var description: String = ""
-    @State private var imageData: Data? = nil
-    @State private var audioData: Data? = nil  // لتخزين بيانات الصوت
-    @Environment(\.dismiss) var dismiss
-
-    @State private var showingImagePicker = false
+    @State private var imageData: Data? = nil  // لتخزين بيانات الصورة
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var isRecording = false  // حالة لتتبع إذا كنا في وضع التسجيل
     @State private var isPlaying = false  // حالة لتتبع إذا كان الصوت قيد التشغيل
@@ -699,6 +696,11 @@ struct NewCard: View {
     @State private var audioRecorder: AVAudioRecorder?  // لتسجيل الصوت
     @State private var audioFileURL: URL?  // لحفظ المسار الخاص بالملف الصوتي
     @State private var showDocumentPicker = false  // لإظهار مستعرض الملفات لاختيار الصوت
+    @State private var isCameraPresented: Bool = false  // لعرض الكاميرا
+    @State private var uiImage: UIImage? = nil  // لتخزين الصورة التي تم التقاطها بالكاميرا
+    @Environment(\.dismiss) var dismiss
+    @State private var audioData: Data? = nil  // لتخزين بيانات الصوت
+
 
     var body: some View {
         VStack {
@@ -708,15 +710,21 @@ struct NewCard: View {
                 .padding(.top)
 
             // عرض الصورة إذا كانت موجودة
-            if let imageData, let uiImage = UIImage(data: imageData) {
+            if let uiImage = uiImage {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 200)
+                    .frame(height: 200)  // نفس الحجم الذي يظهر في "الملفات"
+                    .padding(.bottom, 10)
+            } else if let imageData, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 200)  // نفس الحجم الذي يظهر في "الملفات"
                     .padding(.bottom, 10)
             }
 
-            // اختيار صورة جديدة
+            // زر لاختيار صورة من مكتبة الصور
             PhotosPicker(selection: $selectedItem, matching: .images, photoLibrary: .shared()) {
                 Text("اختار صورة")
                     .font(.headline)
@@ -731,8 +739,23 @@ struct NewCard: View {
                 Task {
                     if let selectedItem, let data = try? await selectedItem.loadTransferable(type: Data.self) {
                         imageData = data
+                        uiImage = UIImage(data: data)  // تحويل البيانات إلى صورة
                     }
                 }
+            }
+
+            // زر لفتح الكاميرا (فتح الكاميرا مباشرة)
+            Button(action: {
+                isCameraPresented = true
+            }) {
+                Text("التقط صورة")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(width: 200)
+                    .background(Color.green)
+                    .cornerRadius(10)
+                    .padding(.bottom, 10)
             }
 
             // حقل إدخال الإيموجي (اختياري)
@@ -827,7 +850,9 @@ struct NewCard: View {
         .onAppear {
             prepareAudioSession()
         }
-        .environment(\.layoutDirection, .rightToLeft)
+        .sheet(isPresented: $isCameraPresented) {
+            ImagePicker(isPresented: $isCameraPresented, image: $uiImage, imageData: $imageData, sourceType: .camera)
+        }
         .fileImporter(isPresented: $showDocumentPicker, allowedContentTypes: [.audio]) { result in
             switch result {
             case .success(let url):
@@ -836,6 +861,7 @@ struct NewCard: View {
                 print("Error picking audio file: \(error.localizedDescription)")
             }
         }
+        .environment(\.layoutDirection, .rightToLeft)
     }
 
     // تحضير الجلسة الصوتية
@@ -918,15 +944,14 @@ struct NewCard: View {
                 audioPlayer?.play()
                 isPlaying = true
             } catch {
-                print("Error writing audio data to file: \(error.localizedDescription)")
+                print("Error playing audio: \(error.localizedDescription)")
             }
         }
     }
 
-    // تحميل ملف الصوت من الجهاز
+    // تحميل ملف صوتي من الجهاز
     private func loadAudioFile(from url: URL) {
         do {
-            // قراءة بيانات الصوت من الملف
             let audioData = try Data(contentsOf: url)
             self.audioData = audioData
         } catch {
@@ -934,3 +959,8 @@ struct NewCard: View {
         }
     }
 }
+
+// UIViewControllerRepresentable لدمج UIImagePickerController مع SwiftUI
+// UIViewControllerRepresentable لدمج UIImagePickerController مع SwiftUI
+
+
