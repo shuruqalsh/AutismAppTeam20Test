@@ -73,8 +73,8 @@
 //    }
 //}
 import SwiftUI
-import SwiftData
 import PhotosUI
+import UIKit
 
 struct NewFile: View {
     @Environment(\.modelContext) private var modelContext
@@ -83,6 +83,8 @@ struct NewFile: View {
     @State private var emoji: String? = nil  // الإيموجي اختياري
     @State private var imageData: Data? = nil  // الصورة اختياريًا
     @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var isCameraPresented: Bool = false
+    @State private var uiImage: UIImage? = nil  // لتخزين الصورة التي تم التقاطها أو اختيارها
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -93,7 +95,13 @@ struct NewFile: View {
                 .padding(.top)
 
             // عرض الصورة إذا كانت موجودة
-            if let imageData, let uiImage = UIImage(data: imageData) {
+            if let uiImage = uiImage {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 200)
+                    .padding(.bottom, 10)
+            } else if let imageData, let uiImage = UIImage(data: imageData) {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
@@ -101,7 +109,7 @@ struct NewFile: View {
                     .padding(.bottom, 10)
             }
 
-            // زر لاختيار صورة
+            // زر لاختيار صورة من مكتبة الصور
             PhotosPicker(selection: $selectedItem, matching: .images, photoLibrary: .shared()) {
                 Text("اختار صورة")
                     .font(.headline)
@@ -116,8 +124,23 @@ struct NewFile: View {
                 Task {
                     if let selectedItem, let data = try? await selectedItem.loadTransferable(type: Data.self) {
                         imageData = data
+                        uiImage = UIImage(data: data) // تحويل البيانات إلى صورة
                     }
                 }
+            }
+
+            // زر لفتح الكاميرا (فتح الكاميرا مباشرة بدون الذهاب إلى مكتبة الصور)
+            Button(action: {
+                isCameraPresented = true
+            }) {
+                Text("التقط صورة")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(width: 200)
+                    .background(Color.green)
+                    .cornerRadius(10)
+                    .padding(.bottom, 10)
             }
 
             // حقل إدخال الإيموجي (اختياري)
@@ -178,6 +201,49 @@ struct NewFile: View {
         }
         .padding()
         .environment(\.layoutDirection, .rightToLeft) // تعيين اتجاه الكتابة من اليمين لليسار
+        .sheet(isPresented: $isCameraPresented) {
+            ImagePicker(isPresented: $isCameraPresented, image: $uiImage, sourceType: .camera) // التأكد من الكاميرا
+        }
     }
 }
 
+// UIViewControllerRepresentable لدمج UIImagePickerController مع SwiftUI
+struct ImagePicker: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
+    @Binding var image: UIImage?
+    var sourceType: UIImagePickerController.SourceType
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = sourceType
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        return Coordinator(isPresented: $isPresented, image: $image)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        @Binding var isPresented: Bool
+        @Binding var image: UIImage?
+        
+        init(isPresented: Binding<Bool>, image: Binding<UIImage?>) {
+            _isPresented = isPresented
+            _image = image
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            isPresented = false
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let selectedImage = info[.originalImage] as? UIImage {
+                image = selectedImage
+            }
+            isPresented = false
+        }
+    }
+}

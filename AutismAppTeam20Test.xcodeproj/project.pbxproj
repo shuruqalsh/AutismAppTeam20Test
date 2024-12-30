@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		6537DA3F2D218F1C00D6AA47 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 6537DA3E2D218F1C00D6AA47 /* Localizable.xcstrings */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		5809F3142D1C17DA00114D73 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		5809F3032D1C17D900114D73 /* AutismAppTeam20Test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AutismAppTeam20Test.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5809F3132D1C17DA00114D73 /* AutismAppTeam20TestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AutismAppTeam20TestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5809F31D2D1C17DA00114D73 /* AutismAppTeam20TestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AutismAppTeam20TestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6537DA3E2D218F1C00D6AA47 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +80,7 @@
 		5809F2FA2D1C17D900114D73 = {
 			isa = PBXGroup;
 			children = (
+				6537DA3E2D218F1C00D6AA47 /* Localizable.xcstrings */,
 				5809F3052D1C17D900114D73 /* AutismAppTeam20Test */,
 				5809F3162D1C17DA00114D73 /* AutismAppTeam20TestTests */,
 				5809F3202D1C17DA00114D73 /* AutismAppTeam20TestUITests */,
@@ -192,6 +198,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ar,
 			);
 			mainGroup = 5809F2FA2D1C17D900114D73;
 			minimizedProjectReferenceProxies = 1;
@@ -212,6 +219,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6537DA3F2D218F1C00D6AA47 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,6 +336,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -384,6 +393,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -456,7 +466,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V3BH27CH3W;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
@@ -475,7 +485,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V3BH27CH3W;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
@@ -493,7 +503,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V3BH27CH3W;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = smayah.AutismAppTeam20TestUITests;
@@ -510,7 +520,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = V3BH27CH3W;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = smayah.AutismAppTeam20TestUITests;
