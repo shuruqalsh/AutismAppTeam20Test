@@ -34,9 +34,22 @@
 		6537DA3E2D218F1C00D6AA47 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		6537DA712D22C46000D6AA47 /* Exceptions for "AutismAppTeam20Test" folder in "AutismAppTeam20Test" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5809F3022D1C17D900114D73 /* AutismAppTeam20Test */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5809F3052D1C17D900114D73 /* AutismAppTeam20Test */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				6537DA712D22C46000D6AA47 /* Exceptions for "AutismAppTeam20Test" folder in "AutismAppTeam20Test" target */,
+			);
 			path = AutismAppTeam20Test;
 			sourceTree = "<group>";
 		};
@@ -406,9 +419,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AutismAppTeam20Test/Preview Content\"";
-				DEVELOPMENT_TEAM = AY49G28558;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AutismAppTeam20Test/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "$(PRODUCT_NAME)نحتاج إلى الوصول إلى الكاميرا لتمكينك من التقاط صور جديدة للملفات الخاصة بك.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "نحتاج إلى إذن لاستخدام الميكروفون لتسجيل الصوت";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -437,9 +452,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AutismAppTeam20Test/Preview Content\"";
-				DEVELOPMENT_TEAM = AY49G28558;
+				DEVELOPMENT_TEAM = B3SPJ78Q6X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AutismAppTeam20Test/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "$(PRODUCT_NAME)نحتاج إلى الوصول إلى الكاميرا لتمكينك من التقاط صور جديدة للملفات الخاصة بك.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "نحتاج إلى إذن لاستخدام الميكروفون لتسجيل الصوت";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

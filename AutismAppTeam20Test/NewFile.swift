@@ -80,11 +80,11 @@ struct NewFile: View {
     @Environment(\.modelContext) private var modelContext
     @Binding var files: [File]
     @State private var title: String = ""
-    @State private var emoji: String? = nil  // الإيموجي اختياري
+    @State private var emoji: String? = nil
     @State private var imageData: Data? = nil  // الصورة اختياريًا
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var isCameraPresented: Bool = false
-    @State private var uiImage: UIImage? = nil  // لتخزين الصورة التي تم التقاطها أو اختيارها
+    @State private var uiImage: UIImage? = nil
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -96,13 +96,13 @@ struct NewFile: View {
 
             // عرض الصورة إذا كانت موجودة
             if let uiImage = uiImage {
-                Image(uiImage: uiImage)
+                Image(uiImage: uiImage)  // عرض الصورة من الكاميرا
                     .resizable()
                     .scaledToFit()
                     .frame(height: 200)
                     .padding(.bottom, 10)
             } else if let imageData, let uiImage = UIImage(data: imageData) {
-                Image(uiImage: uiImage)
+                Image(uiImage: uiImage)  // عرض الصورة من مكتبة الصور
                     .resizable()
                     .scaledToFit()
                     .frame(height: 200)
@@ -200,17 +200,18 @@ struct NewFile: View {
             Spacer()
         }
         .padding()
-        .environment(\.layoutDirection, .rightToLeft) // تعيين اتجاه الكتابة من اليمين لليسار
         .sheet(isPresented: $isCameraPresented) {
-            ImagePicker(isPresented: $isCameraPresented, image: $uiImage, sourceType: .camera) // التأكد من الكاميرا
+            ImagePicker(isPresented: $isCameraPresented, image: $uiImage, imageData: $imageData, sourceType: .camera) // التأكد من تمرير الـ imageData
         }
     }
 }
 
 // UIViewControllerRepresentable لدمج UIImagePickerController مع SwiftUI
+// في الـ ImagePicker، سنمرر الـ imageData كـ Binding:
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     @Binding var image: UIImage?
+    @Binding var imageData: Data?  // إضافة binding للـ imageData
     var sourceType: UIImagePickerController.SourceType
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
@@ -223,16 +224,18 @@ struct ImagePicker: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
-        return Coordinator(isPresented: $isPresented, image: $image)
+        return Coordinator(isPresented: $isPresented, image: $image, imageData: $imageData) // تمرير imageData
     }
     
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         @Binding var isPresented: Bool
         @Binding var image: UIImage?
+        @Binding var imageData: Data?  // إضافة binding للـ imageData
         
-        init(isPresented: Binding<Bool>, image: Binding<UIImage?>) {
+        init(isPresented: Binding<Bool>, image: Binding<UIImage?>, imageData: Binding<Data?>) {
             _isPresented = isPresented
             _image = image
+            _imageData = imageData
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -241,7 +244,12 @@ struct ImagePicker: UIViewControllerRepresentable {
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
             if let selectedImage = info[.originalImage] as? UIImage {
-                image = selectedImage
+                // تحويل الصورة إلى بيانات (Data)
+                if let imageData = selectedImage.jpegData(compressionQuality: 1.0) {
+                    // تخزين بيانات الصورة
+                    self.imageData = imageData  // هنا نقوم بتحديث الـ Binding لـ imageData
+                    self.image = selectedImage  // حفظ الصورة أيضًا لعرضها
+                }
             }
             isPresented = false
         }
