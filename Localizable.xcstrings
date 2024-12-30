@@ -1,8 +1,11 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Hello, World!" : {
+    "" : {
 
+    },
+    "Key" : {
+      "extractionState" : "manual"
     },
     "أدخل اسم الملف" : {
       "localizations" : {
@@ -263,6 +266,9 @@
         }
       }
     },
+    "الرقم السري يهدف لضمان عدم تعديل الإعدادات من قبل الطفل، مما يساعد في الحفاظ على استقرار التطبيق." : {
+
+    },
     "تأكيد" : {
       "localizations" : {
         "ar" : {
@@ -328,6 +334,7 @@
       }
     },
     "ملفات" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -387,6 +394,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Do you want to delete this card? This process cannot be undone."
+          }
+        }
+      }
+    },
+    "هنا يمكنكم اضافة بطاقات جديدة وتعديل بطاقاتكم!\nالرقم السري : 1234." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هنا يمكنكم اضافة بطاقات جديدة وتعديل بطاقاتكم!\nالرقم السري : 1234."
           }
         }
       }

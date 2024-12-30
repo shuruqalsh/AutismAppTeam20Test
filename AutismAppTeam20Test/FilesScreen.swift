@@ -9,15 +9,22 @@ struct FilesScreen: View {
     @State private var fileToEdit: File?
     @State private var showingDeleteConfirmation = false
     @State private var fileToDelete: File?
-    @State private var showPasswordPrompt = false  // عرض نافذة إدخال الرقم السري
-    @State private var password = ""  // الرقم السري المدخل
-    @State private var passwordError = false  // حالة لتحديد إذا كان الرقم السري خاطئًا
-    @State private var showPassword = false  // التحكم في إظهار/إخفاء كلمة المرور
-    @State private var isPasswordCorrect = false  // حالة لتحديد ما إذا كان الرقم السري صحيحًا
-    @State private var isEditingMode = false  // لتحديد إذا كان المستخدم في وضع التعديل (يظهر الأزرار)
+    @State private var showPasswordPrompt = false
+    @State private var password = ""
+    @State private var passwordError = false
+    @State private var showPassword = false
+    @State private var isPasswordCorrect = false
+    @State private var isEditingMode = false
+    
+    @FocusState private var focusedField: Int? // هذا سيتحكم في التركيز بين الحقول
+    
+    @State private var digit1: String = ""
+    @State private var digit2: String = ""
+    @State private var digit3: String = ""
+    @State private var digit4: String = ""
 
-    let correctPassword = "1234"  // الرقم السري الصحيح (يمكن تغييره إلى أي شيء آخر)
-
+    let correctPassword = "1234"
+    
     let columns: [GridItem] = [
         GridItem(.flexible()),
         GridItem(.flexible()),
@@ -27,45 +34,72 @@ struct FilesScreen: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // تعيين الصورة كخلفية
-                Color(hex: "#FFF6E8") // هنا تضع كود الهيكس الذي تريده
-                    .ignoresSafeArea()  // لتغطية كامل الشاشة
-
+                Color(hex: "#FFF6E8").ignoresSafeArea()
                 VStack {
-                    // زر القفل في الأعلى الذي يظهر نافذة إدخال الرقم السري
-                    Button(action: {
-                        if isEditingMode {  // إذا كان في وضع التعديل، عند الضغط على زر القفل ننهي وضع التعديل
-                            isEditingMode = false
-                        } else {
-                            showPasswordPrompt = true  // إظهار نافذة إدخال الرقم السري عند الضغط على زر القفل
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            if isEditingMode {
+                                isEditingMode = false
+                            } else {
+                                showPasswordPrompt = true
+                            }
+                        }) {
+                            if isEditingMode {
+                                Image(systemName: "checkmark")
+                                    .frame(width: 50, height: 50)
+                                    .font(.system(size: 40, weight: .bold))
+                                    .foregroundColor(Color(hex: "#FFF6E8"))
+                                    .padding(.vertical, 10)
+                                    .padding(.horizontal, 20)
+                                    .background(Color(hex: "#FFC967"))
+                                    .cornerRadius(43)
+                            } else {
+                                Image("Line")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50)
+                                    .padding()
+                            }
                         }
-                    }) {
-                        Image(systemName: isEditingMode ? "checkmark.circle.fill" : "lock.shield") // يظهر قفل أو علامة صح بناءً على الحالة
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                            .padding()
-                            .foregroundColor(isEditingMode ? .green : .blue)
+                    }
+                    .padding()
+                    .padding(.top, -50)
+                    Spacer()
+
+                    HStack {
+                        Button(action: {
+                            showingNewFileSheet.toggle()
+                        }) {
+                            Image("plus")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 70, height: 70)
+                        }
+                        Spacer()
                     }
 
-                    // Content Section
+                    .sheet(isPresented: $showingNewFileSheet) {
+                        NewFile(files: $files)
+                    }
+                    .padding([.leading], 20)
+                    .padding(.top, -73)
+                    Spacer()
+
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 16) {
                             ForEach($files) { $file in
                                 VStack {
-                                    // Link to CardsListScreen
                                     NavigationLink(destination: CardsListScreen(file: $file)) {
-                                        FileView(file: file)  // عرض الملف
+                                        FileView(file: file)
                                             .padding()
                                     }
 
-                                    // عرض الأزرار أسفل كل الملفات إذا كان في وضع التعديل
                                     if isEditingMode {
                                         HStack(spacing: 20) {
-                                            // زر تعديل
                                             Button(action: {
                                                 fileToEdit = file
-                                                showingEditFileSheet.toggle()  // إظهار نافذة التعديل
+                                                showingEditFileSheet.toggle()
                                             }) {
                                                 Image(systemName: "pencil")
                                                     .font(.system(size: 22, weight: .bold))
@@ -76,10 +110,9 @@ struct FilesScreen: View {
                                             }
                                             .frame(width: 44, height: 44)
 
-                                            // زر حذف
                                             Button(action: {
                                                 fileToDelete = file
-                                                showingDeleteConfirmation = true  // إظهار التنبيه للحذف
+                                                showingDeleteConfirmation = true
                                             }) {
                                                 Image(systemName: "trash")
                                                     .font(.system(size: 22, weight: .bold))
@@ -90,7 +123,7 @@ struct FilesScreen: View {
                                             }
                                             .frame(width: 44, height: 44)
                                         }
-                                        .padding(.top, 8)  // مسافة بين الملف والأزرار
+                                        .padding(.top, 8)
                                     }
                                 }
                             }
@@ -99,21 +132,19 @@ struct FilesScreen: View {
                     }
                 }
                 .onAppear {
-                    loadFiles()  // إعادة تحميل الملفات عند ظهور الشاشة
+                    loadFiles()
                 }
 
-                // نافذة تعديل الملف
                 .sheet(isPresented: $showingEditFileSheet) {
                     if let fileToEdit = fileToEdit {
                         EditFile(file: fileToEdit) { updatedFile in
                             if let index = files.firstIndex(where: { $0.id == updatedFile.id }) {
-                                files[index] = updatedFile  // تحديث الملف في القائمة
+                                files[index] = updatedFile
                             }
                         }
                     }
                 }
 
-                // التنبيه الذي يطلب تأكيد الحذف
                 .alert(isPresented: $showingDeleteConfirmation) {
                     Alert(
                         title: Text("هل أنت متأكد؟"),
@@ -127,94 +158,113 @@ struct FilesScreen: View {
                     )
                 }
 
-                // نافذة إدخال الرقم السري
                 .sheet(isPresented: $showPasswordPrompt) {
-                    VStack(spacing: 20) {
-                        Text("أدخل الرقم السري")
-                            .font(.headline)
-                        
-                        // حقل النص الذي يمكن رؤية الباسورد فيه
-                        HStack {
-                            if showPassword {
-                                TextField("الرقم السري", text: $password)
-                                    .padding()
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(8)
-                                    .multilineTextAlignment(.center)  // نص في المنتصف
-                                    .padding(.horizontal)
-                            } else {
-                                SecureField("الرقم السري", text: $password)
-                                    .padding()
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(8)
-                                    .multilineTextAlignment(.center)  // نص في المنتصف
-                                    .padding(.horizontal)
-                            }
-                        }
-                        
-                        if passwordError {
-                            Text("الرقم السري غير صحيح.")
-                                .foregroundColor(.red)
-                        }
-                        
-                        Button(action: {
-                            // تحقق من الرقم السري
-                            if password == correctPassword {
-                                isPasswordCorrect = true  // إذا كان الرقم السري صحيحًا
-                                showPasswordPrompt = false  // إغلاق نافذة الرقم السري
-                                isEditingMode = true  // تفعيل وضع التعديل (إظهار الأزرار)
-                            } else {
-                                passwordError = true  // الرقم السري خاطئ
-                            }
-                        }) {
-                            Text("تأكيد")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }
-                        
-                        // زر للتبديل بين إظهار وإخفاء كلمة المرور
-                        Button(action: {
-                            showPassword.toggle()
-                        }) {
-                            Text(showPassword ? "إخفاء الرقم السري" : "إظهار الرقم السري")
-                                .font(.body)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.top)
-                    }
-                    .padding()
-                }
+                    ZStack {
+                        Color(hex: "#FFF6E8").ignoresSafeArea()
 
-                // تخصيص شريط التنقل
-                .toolbar {
-                    // زر ملف جديد على اليسار مع المسافة الآمنة
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            showingNewFileSheet.toggle()
-                        }) {
-                            Image("addCardImageHome")  // استخدم الصورة من الـ Assets
-                                .padding(.top, 20)
-                                .padding()
-                        }
-                    }
+                        VStack {
+                            Image("IpadGirl")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 400, height: 240)
 
-                    // العنوان "ملفات" في المنتصف مع تكبير الخط وإضافة مسافة فوقه
-                    ToolbarItem(placement: .principal) {
-                        Text("ملفات")
-                            .font(.largeTitle)  // تكبير النص ليكون عنوانًا أكبر
-                            .fontWeight(.bold)  // جعل كلمة "ملفات" بالخط العريض
-                            .foregroundColor(.primary)
-                            .padding(10)
-                            .frame(maxWidth: .infinity, alignment: .center) // محاذاة العنوان في المنتصف
+                            Text("هنا يمكنكم اضافة بطاقات جديدة وتعديل بطاقاتكم!\nالرقم السري : 1234.")
+                                .foregroundColor(.black)
+                                .multilineTextAlignment(.center)
+                                .font(.headline)
+
+                            HStack {
+                                TextField("", text: $digit1)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.center)
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+                                    .focused($focusedField, equals: 0)
+                                    .onChange(of: digit1) { _ in
+                                        moveToNextField(current: 0)
+                                        moveToPreviousField(current: 0)
+                                    }
+                                    .foregroundColor(.black)
+
+                                TextField("", text: $digit2)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.center)
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+                                    .focused($focusedField, equals: 1)
+                                    .onChange(of: digit2) { _ in
+                                        moveToNextField(current: 1)
+                                        moveToPreviousField(current: 1)
+                                    }
+                                    .foregroundColor(.black)
+
+                                TextField("", text: $digit3)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.center)
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+                                    .focused($focusedField, equals: 2)
+                                    .onChange(of: digit3) { _ in
+                                        moveToNextField(current: 2)
+                                        moveToPreviousField(current: 2)
+                                    }
+                                    .foregroundColor(.black)
+
+                                TextField("", text: $digit4)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.center)
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+                                    .focused($focusedField, equals: 3)
+                                    .onChange(of: digit4) { _ in
+                                        moveToNextField(current: 3)
+                                        moveToPreviousField(current: 3)
+                                    }
+                                    .foregroundColor(.black)
+                            }
+
+                            if passwordError {
+                                Text("الرقم السري غير صحيح.")
+                                    .foregroundColor(.red)
+                            }
+
+                            Button(action: {
+                                // تحويل الأرقام المدخلة إلى الإنجليزية قبل المقارنة
+                                let enteredPassword = convertToEnglishDigits(digit1 + digit2 + digit3 + digit4)
+                                
+                                if enteredPassword == correctPassword {
+                                    isPasswordCorrect = true
+                                    showPasswordPrompt = false
+                                    isEditingMode = true
+                                } else {
+                                    passwordError = true
+                                }
+                            }) {
+                                Text("تأكيد")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .cornerRadius(10)
+                            }
+
+                            Text("الرقم السري يهدف لضمان عدم تعديل الإعدادات من قبل الطفل، مما يساعد في الحفاظ على استقرار التطبيق.")
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color(hex: "#4C4C4C"))
+                                .font(.headline)
+
+                        }
+                        .padding()
                     }
                 }
-                .sheet(isPresented: $showingNewFileSheet) {
-                    NewFile(files: $files)
-                }
-                .environment(\.layoutDirection, .rightToLeft) // محاذاة الواجهة من اليمين لليسار
             }
         }
     }
@@ -238,5 +288,37 @@ struct FilesScreen: View {
         } catch {
             print("Error deleting file: \(error.localizedDescription)")
         }
+    }
+
+    private func moveToNextField(current: Int) {
+        // ننتقل إلى الحقل التالي فقط إذا كانت القيمة المدخلة غير فارغة
+        if current < 3 && !getFieldValue(current: current).isEmpty {
+            focusedField = current + 1
+        }
+    }
+
+    private func moveToPreviousField(current: Int) {
+        // إذا كان الحقل الحالي فارغًا و ليس الحقل الأول، ننتقل إلى الحقل السابق
+        if current > 0 && getFieldValue(current: current).isEmpty {
+            focusedField = current - 1
+        }
+    }
+
+    private func getFieldValue(current: Int) -> String {
+        switch current {
+        case 0: return digit1
+        case 1: return digit2
+        case 2: return digit3
+        case 3: return digit4
+        default: return ""
+        }
+    }
+
+    private func convertToEnglishDigits(_ input: String) -> String {
+        let arabicToEnglishMapping: [Character: Character] = [
+            "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
+            "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9"
+        ]
+        return String(input.map { arabicToEnglishMapping[$0] ?? $0 })
     }
 }
