@@ -31,27 +31,25 @@ struct FilesScreen: View {
         GridItem(.flexible())
     ]
     
+    @State private var isPressed = false
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 Color(hex: "#FFF6E8").ignoresSafeArea()
-                VStack {
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            if isEditingMode {
-                                isEditingMode = false
-                            } else {
-                                showPasswordPrompt = true
-                            }
-                        }) {
+                VStack{
+                    Spacer()
+                   
+                    
+                    HStack{
+                        
+                        ZStack {
+                            // الزر نفسه
                             if isEditingMode {
                                 Image(systemName: "checkmark")
                                     .frame(width: 50, height: 50)
                                     .font(.system(size: 40, weight: .bold))
                                     .foregroundColor(Color(hex: "#FFF6E8"))
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 20)
                                     .background(Color(hex: "#FFC967"))
                                     .cornerRadius(43)
                             } else {
@@ -59,216 +57,184 @@ struct FilesScreen: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 50, height: 50)
-                                    .padding()
                             }
                         }
-                    }
-                    .padding()
-                    .padding(.top, -50)
-                    Spacer()
-
-                    HStack {
-                        Button(action: {
-                            showingNewFileSheet.toggle()
-                        }) {
+                        .padding()
+                        .onLongPressGesture(minimumDuration: 1.0) { // عند الضغط المطول فقط
+                            // هذا الكود سينفذ فقط عند الضغط المطول
+                            if isEditingMode {
+                                isEditingMode = false
+                            } else {
+                                showPasswordPrompt = true
+                            }
+                        }
+                        Spacer() // المسافة بين الأزرار
+                        
+                        ZStack {
                             Image("plus")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 70, height: 70)
                         }
-                        Spacer()
+                        .padding()
+                        .padding(.top, 10)
+                        .onLongPressGesture(minimumDuration: 1.0) {
+                            
+                            
+                            // الضغط المطول لمدة ثانية واحدة
+                            // تفعيل الـ sheet عند الضغط المطول
+                            showingNewFileSheet.toggle()
+                        }
+                        .sheet(isPresented: $showingNewFileSheet) {
+                            NewFile(files: $files)
+                        }
                     }
-
-                    .sheet(isPresented: $showingNewFileSheet) {
-                        NewFile(files: $files)
-                    }
-                    .padding([.leading], 20)
-                    .padding(.top, -73)
-                    Spacer()
-
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 16) {
-                            ForEach($files) { $file in
-                                VStack {
-                                    NavigationLink(destination: CardsListScreen(file: $file)) {
-                                        FileView(file: file)
-                                            .padding()
-                                    }
-
-                                    if isEditingMode {
-                                        HStack(spacing: 20) {
-                                            Button(action: {
-                                                fileToEdit = file
-                                                showingEditFileSheet.toggle()
-                                            }) {
-                                                Image(systemName: "pencil")
-                                                    .font(.system(size: 22, weight: .bold))
-                                                    .foregroundColor(.white)
-                                                    .padding(12)
-                                                    .background(Color.blue)
-                                                    .clipShape(Circle())
-                                            }
-                                            .frame(width: 44, height: 44)
-
-                                            Button(action: {
-                                                fileToDelete = file
-                                                showingDeleteConfirmation = true
-                                            }) {
-                                                Image(systemName: "trash")
-                                                    .font(.system(size: 22, weight: .bold))
-                                                    .foregroundColor(.white)
-                                                    .padding(12)
-                                                    .background(Color.red)
-                                                    .clipShape(Circle())
-                                            }
-                                            .frame(width: 44, height: 44)
+                        ScrollView {
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach($files) { $file in
+                                    VStack {
+                                        NavigationLink(destination: CardsListScreen(file: $file)) {
+                                            FileView(file: file)
+                                                .padding()
                                         }
-                                        .padding(.top, 8)
+                                        
+                                        if isEditingMode {
+                                            HStack(spacing: 20) {
+                                                Button(action: {
+                                                    fileToEdit = file
+                                                    showingEditFileSheet.toggle()
+                                                }) {
+                                                    Image(systemName: "pencil")
+                                                        .font(.system(size: 22, weight: .bold))
+                                                        .foregroundColor(.white)
+                                                        .padding(12)
+                                                        .background(Color.blue)
+                                                        .clipShape(Circle())
+                                                }
+                                                .frame(width: 44, height: 44)
+                                                
+                                                Button(action: {
+                                                    fileToDelete = file
+                                                    showingDeleteConfirmation = true
+                                                }) {
+                                                    Image(systemName: "trash")
+                                                        .font(.system(size: 22, weight: .bold))
+                                                        .foregroundColor(.white)
+                                                        .padding(12)
+                                                        .background(Color.red)
+                                                        .clipShape(Circle())
+                                                }
+                                                .frame(width: 44, height: 44)
+                                            }
+                                            .padding(.top, 8)
+                                        }
                                     }
+                                }
+                            
+                            .padding()
+                                
+                        }
+                            
+                    }
+                    .onAppear {
+                        loadFiles()
+                    }
+                    
+                    .sheet(isPresented: $showingEditFileSheet) {
+                        if let fileToEdit = fileToEdit {
+                            EditFile(file: fileToEdit) { updatedFile in
+                                if let index = files.firstIndex(where: { $0.id == updatedFile.id }) {
+                                    files[index] = updatedFile
                                 }
                             }
                         }
-                        .padding()
                     }
-                }
-                .onAppear {
-                    loadFiles()
-                }
-
-                .sheet(isPresented: $showingEditFileSheet) {
-                    if let fileToEdit = fileToEdit {
-                        EditFile(file: fileToEdit) { updatedFile in
-                            if let index = files.firstIndex(where: { $0.id == updatedFile.id }) {
-                                files[index] = updatedFile
-                            }
-                        }
+                    
+                    .alert(isPresented: $showingDeleteConfirmation) {
+                        Alert(
+                            title: Text("هل أنت متأكد؟"),
+                            message: Text("هل ترغب في حذف هذا الملف؟ هذه العملية لا يمكن التراجع عنها."),
+                            primaryButton: .destructive(Text("حذف")) {
+                                if let fileToDelete = fileToDelete {
+                                    deleteFile(fileToDelete)
+                                }
+                            },
+                            secondaryButton: .cancel(Text("إلغاء"))
+                        )
                     }
-                }
-
-                .alert(isPresented: $showingDeleteConfirmation) {
-                    Alert(
-                        title: Text("هل أنت متأكد؟"),
-                        message: Text("هل ترغب في حذف هذا الملف؟ هذه العملية لا يمكن التراجع عنها."),
-                        primaryButton: .destructive(Text("حذف")) {
-                            if let fileToDelete = fileToDelete {
-                                deleteFile(fileToDelete)
-                            }
-                        },
-                        secondaryButton: .cancel(Text("إلغاء"))
-                    )
-                }
-
-                .sheet(isPresented: $showPasswordPrompt) {
-                    ZStack {
-                        Color(hex: "#FFF6E8").ignoresSafeArea()
-
-                        VStack {
-                            Image("IpadGirl")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 400, height: 240)
-
-                            Text("هنا يمكنكم اضافة بطاقات جديدة وتعديل بطاقاتكم!\nالرقم السري : 1234.")
-                                .foregroundColor(.black)
-                                .multilineTextAlignment(.center)
-                                .font(.headline)
-
-                            HStack {
-                                TextField("", text: $digit1)
+                    
+                    .sheet(isPresented: $showPasswordPrompt) {
+                        ZStack {
+                            Color(hex: "#FFF6E8").ignoresSafeArea()
+                            
+                            VStack {
+                                Image("IpadGirl")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 400, height: 240)
+                                
+                                Text("هنا يمكنكم اضافة بطاقات جديدة وتعديل بطاقاتكم!\nالرقم السري : 1234.")
+                                    .foregroundColor(.black)
+                                    .multilineTextAlignment(.center)
+                                    .font(.headline)
+                                
+                                // استبدال الخانات بفيلد تيكست واحد
+                                TextField("أدخل الرقم السري", text: $password)
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.center)
-                                    .frame(width: 50, height: 50)
+                                    .frame(width: 200, height: 50)
                                     .background(Color.gray.opacity(0.2))
                                     .cornerRadius(8)
                                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
                                     .focused($focusedField, equals: 0)
-                                    .onChange(of: digit1) { _ in
-                                        moveToNextField(current: 0)
-                                        moveToPreviousField(current: 0)
+                                    .onChange(of: password) { _ in
+                                        // التحقق من أن الرقم السري يتكون من 4 أرقام فقط
+                                        if password.count > 4 {
+                                            password = String(password.prefix(4))
+                                        }
                                     }
                                     .foregroundColor(.black)
-
-                                TextField("", text: $digit2)
-                                    .keyboardType(.numberPad)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 50, height: 50)
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(8)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
-                                    .focused($focusedField, equals: 1)
-                                    .onChange(of: digit2) { _ in
-                                        moveToNextField(current: 1)
-                                        moveToPreviousField(current: 1)
-                                    }
-                                    .foregroundColor(.black)
-
-                                TextField("", text: $digit3)
-                                    .keyboardType(.numberPad)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 50, height: 50)
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(8)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
-                                    .focused($focusedField, equals: 2)
-                                    .onChange(of: digit3) { _ in
-                                        moveToNextField(current: 2)
-                                        moveToPreviousField(current: 2)
-                                    }
-                                    .foregroundColor(.black)
-
-                                TextField("", text: $digit4)
-                                    .keyboardType(.numberPad)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 50, height: 50)
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(8)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
-                                    .focused($focusedField, equals: 3)
-                                    .onChange(of: digit4) { _ in
-                                        moveToNextField(current: 3)
-                                        moveToPreviousField(current: 3)
-                                    }
-                                    .foregroundColor(.black)
-                            }
-
-                            if passwordError {
-                                Text("الرقم السري غير صحيح.")
-                                    .foregroundColor(.red)
-                            }
-
-                            Button(action: {
-                                // تحويل الأرقام المدخلة إلى الإنجليزية قبل المقارنة
-                                let enteredPassword = convertToEnglishDigits(digit1 + digit2 + digit3 + digit4)
+                                    .padding(.horizontal)
                                 
-                                if enteredPassword == correctPassword {
-                                    isPasswordCorrect = true
-                                    showPasswordPrompt = false
-                                    isEditingMode = true
-                                } else {
-                                    passwordError = true
+                                if passwordError {
+                                    Text("الرقم السري غير صحيح.")
+                                        .foregroundColor(.red)
                                 }
-                            }) {
-                                Text("تأكيد")
-                                    .font(.title2)
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .background(Color.blue)
-                                    .cornerRadius(10)
+                                
+                                Button(action: {
+                                    // تحويل الرقم السري إلى الإنجليزية قبل المقارنة
+                                    let enteredPassword = convertToEnglishDigits(password)
+                                    
+                                    if enteredPassword == correctPassword {
+                                        isPasswordCorrect = true
+                                        showPasswordPrompt = false
+                                        isEditingMode = true
+                                    } else {
+                                        passwordError = true
+                                    }
+                                }) {
+                                    Text("تأكيد")
+                                        .font(.title2)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .background(Color.blue)
+                                        .cornerRadius(10)
+                                }
+                                
+                                Text("الرقم السري يهدف لضمان عدم تعديل الإعدادات من قبل الطفل، مما يساعد في الحفاظ على استقرار التطبيق.")
+                                    .multilineTextAlignment(.center)
+                                    .foregroundColor(Color(hex: "#4C4C4C"))
+                                    .font(.headline)
                             }
-
-                            Text("الرقم السري يهدف لضمان عدم تعديل الإعدادات من قبل الطفل، مما يساعد في الحفاظ على استقرار التطبيق.")
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(Color(hex: "#4C4C4C"))
-                                .font(.headline)
-
+                            .padding()
                         }
-                        .padding()
                     }
+
+                   
                 }
             }
         }
     }
-
     private func loadFiles() {
         do {
             let fetchDescriptor = FetchDescriptor<File>()
@@ -320,5 +286,12 @@ struct FilesScreen: View {
             "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9"
         ]
         return String(input.map { arabicToEnglishMapping[$0] ?? $0 })
+    }
+}
+struct FilesScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        FilesScreen()
+            .previewDevice("iPhone 14") // You can change the device here
+            .previewLayout(.sizeThatFits) // Adjusts the layout to the screen size
     }
 }
