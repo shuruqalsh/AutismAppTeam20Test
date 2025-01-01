@@ -1,77 +1,4 @@
-//
-//  NewFile.swift
-//  AutismAppTeam20
-//
-//  Created by Sumayah Alqahtani on 21/06/1446 AH.
-//
 
-//import SwiftUI
-//import SwiftData
-//
-//struct NewFile: View {
-//    @Environment(\.modelContext) private var modelContext
-//    @Binding var files: [File]
-//    @State private var title: String = ""
-//    @State private var emoji: String = ""
-//    @Environment(\.dismiss) var dismiss  // دالة لإغلاق الـ sheet
-//
-//    var body: some View {
-//        VStack {
-//            // حقل إدخال الإيموجي
-//            TextField("أدخل الإيموجي", text: $emoji)
-//                .font(.largeTitle)
-//                .multilineTextAlignment(.center)
-//                .padding()
-//
-//            // حقل إدخال اسم الملف
-//            TextField("أدخل اسم الملف", text: $title)
-//                .font(.largeTitle)
-//                .multilineTextAlignment(.center)
-//                .padding()
-//
-//            HStack {
-//                // زر الحفظ
-//                Button("حفظ") {
-//                    if !title.isEmpty && !emoji.isEmpty {
-//                        let newFile = File(title: title, emoji: emoji)
-//                        modelContext.insert(newFile)
-//                        
-//                        do {
-//                            try modelContext.save()
-//                            files.append(newFile)
-//                            title = ""
-//                            emoji = ""
-//                            dismiss()  // إغلاق الـ sheet بعد الحفظ
-//                        } catch {
-//                            print("Error saving file: \(error.localizedDescription)")
-//                        }
-//                    }
-//                }
-//                .padding()
-//                .background(Color.blue)
-//                .foregroundColor(.white)
-//                .cornerRadius(10)
-//
-//                // زر الإلغاء
-//                Button("إلغاء") {
-//                    // إعادة تعيين الحقول
-//                    title = ""
-//                    emoji = ""
-//                    dismiss()  // إغلاق الـ sheet عند الإلغاء
-//                }
-//                .padding()
-//                .background(Color.red)
-//                .foregroundColor(.white)
-//                .cornerRadius(10)
-//            }
-//            .padding(.top, 20)
-//
-//            Spacer()
-//        }
-//        .padding()
-//        .environment(\.layoutDirection, .rightToLeft) // تعيين اتجاه الكتابة من اليمين لليسار
-//    }
-//}
 import SwiftUI
 import PhotosUI
 import UIKit
@@ -86,6 +13,8 @@ struct NewFile: View {
     @State private var isCameraPresented: Bool = false
     @State private var uiImage: UIImage? = nil
     @Environment(\.dismiss) var dismiss
+    
+    
 
     var body: some View {
         VStack {

@@ -16,13 +16,15 @@ struct FilesScreen: View {
     @State private var isPasswordCorrect = false
     @State private var isEditingMode = false
     
+
+    @State private var selectedFile: File? = nil
+  
+    @State private var currentPage: Int = 0  // الصفحة الحالية
+    @State private var showButtonsForFile: File?  // الملف الذي تظهر له الأزرار
+    
+
     @FocusState private var focusedField: Int? // هذا سيتحكم في التركيز بين الحقول
     
-    @State private var digit1: String = ""
-    @State private var digit2: String = ""
-    @State private var digit3: String = ""
-    @State private var digit4: String = ""
-
     let correctPassword = "1234"
     
     let columns: [GridItem] = [
@@ -31,114 +33,150 @@ struct FilesScreen: View {
         GridItem(.flexible())
     ]
     
-    @State private var isPressed = false
+    @State private var isPressed1 = false // حالة الزر الأول (Checkmark)
+    @State private var isPressed2 = false // حالة الزر الثاني (Line)
     
     var body: some View {
         NavigationStack {
             ZStack {
+                
                 Color(hex: "#FFF6E8").ignoresSafeArea()
                 VStack{
+                    Text("المكتبات")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.black)
                     Spacer()
-                   
+                    // إضافة مسافة من الأعلى
+                }
+                VStack{
                     
                     HStack{
                         
                         ZStack {
-                            // الزر نفسه
                             if isEditingMode {
+                                // زر التشيك مارك
                                 Image(systemName: "checkmark")
                                     .frame(width: 50, height: 50)
                                     .font(.system(size: 40, weight: .bold))
                                     .foregroundColor(Color(hex: "#FFF6E8"))
                                     .background(Color(hex: "#FFC967"))
                                     .cornerRadius(43)
+                                    .onTapGesture {
+                                        // الضغط العادي فقط لزر التشيك مارك
+                                        if isEditingMode {
+                                            isEditingMode = false
+                                        } else {
+                                            showPasswordPrompt = true
+                                        }
+                                    }
                             } else {
+                                // زر اللاين مع الضغط المطول
                                 Image("Line")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 50, height: 50)
+                                    .onLongPressGesture(minimumDuration: 1.0) {
+                                        // الضغط المطول فقط لزر الـ Line
+                                        print("Long press on Line")
+                                        
+                                        // إظهار نافذة الرقم السري عند الضغط المطول على زر اللاين
+                                        showPasswordPrompt = true  // هذا متغير لتحديد ما إذا كان يجب عرض نافذة الرقم السري
+                                    }
+                                    .onTapGesture {
+                                        // إذا أردت إضافة أي إجراء عند الضغط العادي على اللاين يمكن إضافته هنا
+                                    }
                             }
                         }
                         .padding()
-                        .onLongPressGesture(minimumDuration: 1.0) { // عند الضغط المطول فقط
-                            // هذا الكود سينفذ فقط عند الضغط المطول
-                            if isEditingMode {
-                                isEditingMode = false
-                            } else {
-                                showPasswordPrompt = true
-                            }
-                        }
+
+
                         Spacer() // المسافة بين الأزرار
-                        
+
                         ZStack {
                             Image("plus")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 70, height: 70)
+                                .onLongPressGesture(minimumDuration: 1.0) { // الضغط المطول لمدة ثانية واحدة لزر plus
+                                    // تفعيل الـ sheet عند الضغط المطول
+                                    showingNewFileSheet.toggle()
+                                }
                         }
                         .padding()
                         .padding(.top, 10)
-                        .onLongPressGesture(minimumDuration: 1.0) {
-                            
-                            
-                            // الضغط المطول لمدة ثانية واحدة
-                            // تفعيل الـ sheet عند الضغط المطول
-                            showingNewFileSheet.toggle()
-                        }
                         .sheet(isPresented: $showingNewFileSheet) {
                             NewFile(files: $files)
                         }
+
                     }
-                        ScrollView {
-                            LazyVGrid(columns: columns, spacing: 16) {
-                                ForEach($files) { $file in
-                                    VStack {
-                                        NavigationLink(destination: CardsListScreen(file: $file)) {
-                                            FileView(file: file)
-                                                .padding()
-                                        }
-                                        
-                                        if isEditingMode {
-                                            HStack(spacing: 20) {
-                                                Button(action: {
-                                                    fileToEdit = file
-                                                    showingEditFileSheet.toggle()
-                                                }) {
-                                                    Image(systemName: "pencil")
-                                                        .font(.system(size: 22, weight: .bold))
-                                                        .foregroundColor(.white)
-                                                        .padding(12)
-                                                        .background(Color.blue)
-                                                        .clipShape(Circle())
-                                                }
-                                                .frame(width: 44, height: 44)
-                                                
-                                                Button(action: {
-                                                    fileToDelete = file
-                                                    showingDeleteConfirmation = true
-                                                }) {
-                                                    Image(systemName: "trash")
-                                                        .font(.system(size: 22, weight: .bold))
-                                                        .foregroundColor(.white)
-                                                        .padding(12)
-                                                        .background(Color.red)
-                                                        .clipShape(Circle())
-                                                }
-                                                .frame(width: 44, height: 44)
-                                            }
-                                            .padding(.top, 8)
-                                        }
-                                    }
-                                }
-                            
-                            .padding()
-                                
-                        }
-                            
-                    }
-                    .onAppear {
-                        loadFiles()
-                    }
+                    TabView(selection: $currentPage) {
+                                  ForEach(0..<splitFilesIntoPages().count, id: \.self) { index in
+                                      let page = splitFilesIntoPages()[index]
+                                      VStack {
+                                          LazyVGrid(columns: columns, spacing: 16) {
+                                              ForEach(page, id: \.id) { file in
+                                                  VStack {
+                                                      ZStack {
+                                                          NavigationLink(destination: CardsListScreen(file: .constant(file))) {
+                                                              FileView(file: file)
+                                                                  .padding(.bottom, 16)
+                                                          }
+                                                          if isEditingMode {
+                                                              HStack(spacing: 20) {
+                                                                  Button(action: {
+                                                                      fileToEdit = file
+                                                                      showingEditFileSheet.toggle()
+                                                                  }) {
+                                                                      Image(systemName: "pencil")
+                                                                          .font(.system(size: 22, weight: .bold))
+                                                                          .foregroundColor(.white)
+                                                                          .padding(12)
+                                                                          .background(Color.blue)
+                                                                          .clipShape(Circle())
+                                                                  }
+                                                                  Button(action: {
+                                                                      fileToDelete = file
+                                                                      showingDeleteConfirmation = true
+                                                                  }) {
+                                                                      Image(systemName: "trash")
+                                                                          .font(.system(size: 22, weight: .bold))
+                                                                          .foregroundColor(.white)
+                                                                          .padding(12)
+                                                                          .background(Color.red)
+                                                                          .clipShape(Circle())
+                                                                  }
+                                                              }
+                                                          }
+                                                      }
+                                                  }
+                                              }
+                                          }
+                                          .padding()
+                                      }
+                                      .tag(index)
+                                  }
+                              }
+                              .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                              .padding(.top)
+                              .onAppear {
+                                  loadFiles()
+                              }
+
+                              HStack {
+                                  ForEach(0..<splitFilesIntoPages().count, id: \.self) { index in
+                                      Circle()
+                                          .fill(index == currentPage ? Color.orange : Color.gray)
+                                          .frame(width: 10, height: 10)
+                                          .scaleEffect(index == currentPage ? 1.5 : 1)
+                                          .animation(.spring(), value: currentPage)
+                                          .onTapGesture {
+                                              currentPage = index
+                                          }
+                                  }
+                              }
+                              .padding(.top, 10)
+                    
                     
                     .sheet(isPresented: $showingEditFileSheet) {
                         if let fileToEdit = fileToEdit {
@@ -178,7 +216,6 @@ struct FilesScreen: View {
                                     .multilineTextAlignment(.center)
                                     .font(.headline)
                                 
-                                // استبدال الخانات بفيلد تيكست واحد
                                 TextField("أدخل الرقم السري", text: $password)
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.center)
@@ -188,7 +225,6 @@ struct FilesScreen: View {
                                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
                                     .focused($focusedField, equals: 0)
                                     .onChange(of: password) { _ in
-                                        // التحقق من أن الرقم السري يتكون من 4 أرقام فقط
                                         if password.count > 4 {
                                             password = String(password.prefix(4))
                                         }
@@ -202,7 +238,6 @@ struct FilesScreen: View {
                                 }
                                 
                                 Button(action: {
-                                    // تحويل الرقم السري إلى الإنجليزية قبل المقارنة
                                     let enteredPassword = convertToEnglishDigits(password)
                                     
                                     if enteredPassword == correctPassword {
@@ -217,7 +252,7 @@ struct FilesScreen: View {
                                         .font(.title2)
                                         .foregroundColor(.white)
                                         .padding()
-                                        .background(Color.blue)
+                                        .background(Color(hex: "#FFC967"))
                                         .cornerRadius(10)
                                 }
                                 
@@ -230,7 +265,6 @@ struct FilesScreen: View {
                         }
                     }
 
-                   
                 }
             }
         }
@@ -256,28 +290,14 @@ struct FilesScreen: View {
         }
     }
 
-    private func moveToNextField(current: Int) {
-        // ننتقل إلى الحقل التالي فقط إذا كانت القيمة المدخلة غير فارغة
-        if current < 3 && !getFieldValue(current: current).isEmpty {
-            focusedField = current + 1
+    private func splitFilesIntoPages() -> [[File]] {
+        var pages: [[File]] = []
+        let chunkSize = 6
+        for index in stride(from: 0, to: files.count, by: chunkSize) {
+            let chunk = Array(files[index..<min(index + chunkSize, files.count)])
+            pages.append(chunk)
         }
-    }
-
-    private func moveToPreviousField(current: Int) {
-        // إذا كان الحقل الحالي فارغًا و ليس الحقل الأول، ننتقل إلى الحقل السابق
-        if current > 0 && getFieldValue(current: current).isEmpty {
-            focusedField = current - 1
-        }
-    }
-
-    private func getFieldValue(current: Int) -> String {
-        switch current {
-        case 0: return digit1
-        case 1: return digit2
-        case 2: return digit3
-        case 3: return digit4
-        default: return ""
-        }
+        return pages
     }
 
     private func convertToEnglishDigits(_ input: String) -> String {
@@ -291,7 +311,7 @@ struct FilesScreen: View {
 struct FilesScreen_Previews: PreviewProvider {
     static var previews: some View {
         FilesScreen()
-            .previewDevice("iPhone 14") // You can change the device here
-            .previewLayout(.sizeThatFits) // Adjusts the layout to the screen size
+            .previewDevice("iPhone 14")
+            .previewLayout(.sizeThatFits)
     }
 }

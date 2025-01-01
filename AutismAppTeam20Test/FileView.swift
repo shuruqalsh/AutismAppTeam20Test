@@ -25,13 +25,14 @@ struct FileView: View {
             Spacer()
             // عرض عنوان الملف
             Text(file.title)
+                .foregroundColor(.black)
                 .font(.system(size: 30))
 //                .padding(.bottom, 10)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
-        .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.1)))
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color(hex: "#FFE6DC")))
         .padding(.bottom, 10)
         .environment(\.layoutDirection, .rightToLeft)  // محاذاة من اليمين لليسار
     }

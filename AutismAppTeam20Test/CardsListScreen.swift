@@ -71,7 +71,8 @@ struct CardsListScreen: View {
                                 .scaledToFit()
                                 .frame(width: 70, height: 70)
                         }
-                        .padding(.top, 50)
+                        .padding()
+                        .padding(.top, 9)
                         .sheet(isPresented: $showingNewCardSheet) {
                             NewCard(file: $file)
                         }
