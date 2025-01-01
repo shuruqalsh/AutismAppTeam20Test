@@ -1,4 +1,3 @@
-
 import SwiftUI
 import PhotosUI
 
@@ -12,10 +11,6 @@ struct EditFile: View {
     var file: File
     var onSave: (File) -> Void
 
-    
-    
-    
-    
     init(file: File, onSave: @escaping (File) -> Void) {
         _title = State(initialValue: file.title)
         _emoji = State(initialValue: file.emoji)

@@ -251,4 +251,3 @@ struct CardsListScreen: View {
     }
 }
 
-
